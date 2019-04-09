@@ -1,5 +1,4 @@
 open Core_kernel
-open Poly
 
 module Color = struct
   type t =
@@ -34,7 +33,7 @@ module Line = struct
   let red content = { color = Red; content }
   let green content = { color = Green; content }
   let length t = String.length t.content
-  let first t = String.find t.content ~f:(fun x -> x <> ' ') |> Option.value_exn
+  let first t = String.find t.content ~f:(fun x -> Char.( <> ) x ' ') |> Option.value_exn
   let last t = t.content.[String.length t.content - 1]
 
   let concat a b =
@@ -42,7 +41,9 @@ module Line = struct
     let b = String.lstrip b.content in
     let { color; content } = a in
     let content =
-      if last a = '(' || b.[0] = ')' then content ^ b else content ^ " " ^ b
+      if Char.( = ) (last a) '(' || Char.( = ) b.[0] ')'
+      then content ^ b
+      else content ^ " " ^ b
     in
     { color; content }
   ;;
@@ -161,9 +162,9 @@ let combine a b =
   | _, Line_pair.Different _ -> None
   | Line_pair.Same a, Line_pair.Same b ->
     let combine () = Some (Line_pair.Same (Line.concat a b)) in
-    if Line.first b = ')'
+    if Char.( = ) (Line.first b) ')'
     then combine ()
-    else if Line.last a = '('
+    else if Char.( = ) (Line.last a) '('
     then combine ()
     else None
 ;;
