@@ -48,9 +48,8 @@ let unexpected_atom ~atom =
 let rec apply_list ~(diffs : t list) ~(sexps : Sexp.t list) : Sexp.t list Or_error.t =
   let open Or_error.Let_syntax in
   match diffs, sexps with
-  | Same expected :: _, []
-  | Delete expected :: _, []
-  | Replace (expected, _) :: _, [] -> found_nothing ~expected
+  | Same expected :: _, [] | Delete expected :: _, [] | Replace (expected, _) :: _, [] ->
+    found_nothing ~expected
   | Enclose _ :: _, [] ->
     Or_error.error_string "Can't apply the diff: expected a list, found nothing"
   | Same expected :: diffs, found :: sexps ->
@@ -83,7 +82,9 @@ let apply diff sexp =
     | _ ->
       raise_s
         [%message
-          "internal error in [Sexp_diff] while applying diff" (diff : t) (sexp : Sexp.t)])
+          "internal error in [Sexp_diff] while applying diff"
+            (diff : t)
+            (sexp : Sexp.t)])
 ;;
 
 let apply_exn diff sexp = apply diff sexp |> Or_error.ok_exn

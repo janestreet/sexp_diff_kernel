@@ -158,8 +158,7 @@ let diff_to_indentation_delta = function
 
 let combine a b =
   match a, b with
-  | Line_pair.Different _, _
-  | _, Line_pair.Different _ -> None
+  | Line_pair.Different _, _ | _, Line_pair.Different _ -> None
   | Line_pair.Same a, Line_pair.Same b ->
     let combine () = Some (Line_pair.Same (Line.concat a b)) in
     if Char.( = ) (Line.first b) ')'

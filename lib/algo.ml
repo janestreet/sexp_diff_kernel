@@ -152,8 +152,7 @@ end = struct
     let a = Table.repr table a in
     let b = Table.repr table b in
     match a, b with
-    | Repr.Atom _, _
-    | _, Repr.Atom _ -> None
+    | Repr.Atom _, _ | _, Repr.Atom _ -> None
     | Repr.List a, Repr.List b -> Some (a, b)
   ;;
 end
@@ -173,8 +172,7 @@ module AChange = struct
       Interned_sexp.size ~table a
       + Interned_sexp.size ~table b
       + cost_per_discrete_change
-    | Delete x
-    | Add x -> Interned_sexp.size ~table x + cost_per_discrete_change
+    | Delete x | Add x -> Interned_sexp.size ~table x + cost_per_discrete_change
   ;;
 
   let min ~table a b = if cost ~table a <= cost ~table b then a else b
@@ -214,8 +212,7 @@ module Solution = struct
 
   let min a b =
     match a, b with
-    | Invalid, x
-    | x, Invalid -> x
+    | Invalid, x | x, Invalid -> x
     | Valid a, Valid b -> if a.cost <= b.cost then Valid a else Valid b
   ;;
 end
