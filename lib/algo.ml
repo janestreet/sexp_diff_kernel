@@ -160,7 +160,10 @@ end
 module AChange = struct
   type t =
     | Same of Interned_sexp.t
-    | Enclose of { children : t list; cost : int }
+    | Enclose of
+        { children : t list
+        ; cost : int
+        }
     | Replace of Interned_sexp.t * Interned_sexp.t
     | Delete of Interned_sexp.t
     | Add of Interned_sexp.t
