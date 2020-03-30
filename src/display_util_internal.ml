@@ -203,7 +203,8 @@ let hide_lines ~display_options lines =
     |> List.concat)
 ;;
 
-let display ?(display_options = Display_options.default) changes =
+let hideable_line_pairs ?(display_options = Display_options.default) diff =
+  let changes = Linear_diff.of_diff diff in
   let indentation = 0 in
   let indentation, lines =
     List.fold_map changes ~init:indentation ~f:(fun indentation change ->
@@ -214,35 +215,4 @@ let display ?(display_options = Display_options.default) changes =
   in
   assert (indentation = 0);
   List.concat lines |> combine_lines |> hide_lines ~display_options
-;;
-
-let hide_message ~num_hidden = sprintf "...%d unchanged lines..." num_hidden
-let all_hidden_message = "(no changes)"
-
-let display ?display_options diff ~on_hidden ~on_all_hidden ~on_line_pair =
-  let diff = Linear_diff.of_diff diff in
-  let lines = display ?display_options diff in
-  let length ~project =
-    List.map lines ~f:(function
-      | Hideable_line_pair.Hidden num_hidden ->
-        String.length (hide_message ~num_hidden)
-      | All_hidden -> String.length all_hidden_message
-      | Line_pair x -> Line.length (project x))
-    |> List.max_elt ~compare:Int.compare
-    |> Option.value ~default:0
-  in
-  let left_length = length ~project:Line_pair.fst in
-  let right_length = length ~project:Line_pair.snd in
-  let pad_to_left = left_length + 2 in
-  let pad_to_right = right_length in
-  let width = pad_to_left + pad_to_right in
-  List.map lines ~f:(function
-    | Hideable_line_pair.Hidden num_hidden -> on_hidden ~num_hidden ~width
-    | Hideable_line_pair.All_hidden -> on_all_hidden ~width
-    | Line_pair line_pair ->
-      let left = Line_pair.fst line_pair in
-      let right = Line_pair.snd line_pair in
-      let left_padding = String.make (pad_to_left - Line.length left) ' ' in
-      let right_padding = String.make (pad_to_right - Line.length right) ' ' in
-      on_line_pair ~left ~right ~left_padding ~right_padding)
 ;;

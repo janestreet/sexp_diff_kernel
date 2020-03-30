@@ -22,6 +22,8 @@ module Line : sig
     -> plain:(string -> 'a)
     -> t
     -> 'a
+
+  val length : t -> int
 end
 
 module Display_options : sig
@@ -31,17 +33,23 @@ module Display_options : sig
   val default : t
 end
 
-val hide_message : num_hidden:int -> string
-val all_hidden_message : string
+module Line_pair : sig
+  type t =
+    | Same of Line.t
+    | Different of (Line.t * Line.t)
 
-val display
+  val fst : t -> Line.t
+  val snd : t -> Line.t
+end
+
+module Hideable_line_pair : sig
+  type t =
+    | Line_pair of Line_pair.t
+    | Hidden of int
+    | All_hidden
+end
+
+val hideable_line_pairs
   :  ?display_options:Display_options.t
   -> Diff.t
-  -> on_hidden:(num_hidden:int -> width:int -> 'a)
-  -> on_all_hidden:(width:int -> 'a)
-  -> on_line_pair:(left:Line.t
-                   -> right:Line.t
-                   -> left_padding:string
-                   -> right_padding:string
-                   -> 'a)
-  -> 'a list
+  -> Hideable_line_pair.t list

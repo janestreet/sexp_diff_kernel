@@ -5,7 +5,12 @@ module Display_options : sig
       we collapse them and only show the first [num_shown] and the last [num_shown] of
       these lines. *)
 
-  val create : ?collapse_threshold:int -> ?num_shown:int -> unit -> t
+  val create
+    :  ?collapse_threshold:int
+    -> ?num_shown:int
+    -> ?single_column:bool (** default: false *)
+    -> unit
+    -> t
 end
 
 (** [display_as_plain_string] displays the diff as a string.  Here is a possible output of
@@ -43,3 +48,19 @@ val display_as_string_with_custom_formatting
     deletions and additions are marked by red and green text rather than '-' and '+'.
 *)
 val display_with_ansi_colors : ?display_options:Display_options.t -> Diff.t -> string
+
+val two_column_display_as_list
+  :  ?display_options:Display_util_internal.Display_options.t
+  -> Diff.t
+  (** A single string spanning both columns. [width] is the width of the display. *)
+  -> on_full_width_message:(string -> width:int -> 'a)
+  (** A line with a piece in the left column and a piece in the right column.
+
+      [left_padding] is whitespace to append after [left] to make up the full width of
+      the left column. Similarly, [right_padding] after [right]. *)
+  -> on_line_pair:(left:Display_util_internal.Line.t
+                   -> right:Display_util_internal.Line.t
+                   -> left_padding:string
+                   -> right_padding:string
+                   -> 'a)
+  -> 'a list
