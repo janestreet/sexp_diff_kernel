@@ -2,19 +2,24 @@ open Core_kernel
 module U = Display_util_internal
 
 module Display_options = struct
+  module Layout = struct
+    type t =
+      | Single_column
+      | Two_column
+    [@@deriving compare, enumerate, sexp_of]
+  end
+
   type t =
-    { internal_options : U.Display_options.t
-    ; single_column : bool
+    { layout : Layout.t
+    ; internal_options : U.Display_options.t
     }
   [@@deriving fields, sexp_of]
 
-  let create ?collapse_threshold ?num_shown ?(single_column = false) () =
-    { single_column
-    ; internal_options = U.Display_options.create ?collapse_threshold ?num_shown ()
+  let create ?collapse_threshold ?num_shown layout =
+    { internal_options = U.Display_options.create ?collapse_threshold ?num_shown ()
+    ; layout
     }
   ;;
-
-  let default = create ()
 end
 
 let hide_message ~num_hidden = sprintf "...%d unchanged lines..." num_hidden
@@ -103,93 +108,30 @@ let display_two_column_as_string_with_custom_formatting
     ~on_line_pair
 ;;
 
-let display_as_string_with_custom_formatting ?display_options diff ~green ~red ~plain =
-  let single_column =
-    Option.value display_options ~default:Display_options.default
-    |> Display_options.single_column
-  in
-  let display_options = Option.map display_options ~f:Display_options.internal_options in
+let display_as_string_with_custom_formatting display_options diff ~green ~red ~plain =
   let display =
-    match single_column with
-    | true -> display_single_column_as_string_with_custom_formatting
-    | false -> display_two_column_as_string_with_custom_formatting
+    match Display_options.layout display_options with
+    | Single_column -> display_single_column_as_string_with_custom_formatting
+    | Two_column -> display_two_column_as_string_with_custom_formatting
   in
-  display ?display_options diff ~green ~red ~plain |> String.concat ~sep:"\n"
+  let display_options = Display_options.internal_options display_options in
+  display diff ~display_options ~green ~red ~plain |> String.concat ~sep:"\n"
 ;;
 
-let display_as_plain_string ?display_options diff =
+let display_as_plain_string display_options diff =
   display_as_string_with_custom_formatting
-    ?display_options
+    display_options
     diff
     ~green:(fun x -> "+" ^ x)
     ~red:(fun x -> "-" ^ x)
     ~plain:(fun x -> " " ^ x)
 ;;
 
-let display_with_ansi_colors ?display_options diff =
+let display_with_ansi_colors display_options diff =
   display_as_string_with_custom_formatting
-    ?display_options
+    display_options
     diff
     ~green:(fun x -> sprintf "\027[32m%s\027[0m" x)
     ~red:(fun x -> sprintf "\027[31m%s\027[0m" x)
     ~plain:Fn.id
-;;
-
-let%expect_test "the diff looks like this" =
-  let original =
-    {|
-      ((apple 123)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (carrot -1))
-    |}
-    |> Sexp.of_string
-  in
-  let updated =
-    {|
-      ((apricot 321)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (banana 1000)
-       (durian 1234)
-       (carrot 42))
-    |}
-    |> Sexp.of_string
-  in
-  let diff = Algo.diff ~original ~updated () in
-  let () = print_endline (display_as_plain_string diff) in
-  [%expect
-    {|
-  (                         (
- - (apple 123)             + (apricot 321)
-   (banana 1000)             (banana 1000)
-   (banana 1000)             (banana 1000)
-   (banana 1000)             (banana 1000)
-             ...6 unchanged lines...
-   (banana 1000)             (banana 1000)
-   (banana 1000)             (banana 1000)
-   (banana 1000)             (banana 1000)
-                           + (durian 1234)
-   (carrot                   (carrot
- -  -1                     +  42
-   ))                        )) |}]
 ;;

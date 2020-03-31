@@ -1,16 +1,17 @@
 module Display_options : sig
+  module Layout : sig
+    type t =
+      | Single_column
+      | Two_column
+    [@@deriving compare, enumerate, sexp_of]
+  end
+
   type t [@@deriving sexp_of]
 
   (** Whenever there is a sequence of [collapse_threshold] or more unchanged lines,
       we collapse them and only show the first [num_shown] and the last [num_shown] of
       these lines. *)
-
-  val create
-    :  ?collapse_threshold:int
-    -> ?num_shown:int
-    -> ?single_column:bool (** default: false *)
-    -> unit
-    -> t
+  val create : ?collapse_threshold:int -> ?num_shown:int -> Layout.t -> t
 end
 
 (** [display_as_plain_string] displays the diff as a string.  Here is a possible output of
@@ -34,10 +35,10 @@ end
 
     As you can see, deletions are marked by '-' and additions are marked by '+'.
 *)
-val display_as_plain_string : ?display_options:Display_options.t -> Diff.t -> string
+val display_as_plain_string : Display_options.t -> Diff.t -> string
 
 val display_as_string_with_custom_formatting
-  :  ?display_options:Display_options.t
+  :  Display_options.t
   -> Diff.t
   -> green:(string -> string)
   -> red:(string -> string)
@@ -47,7 +48,7 @@ val display_as_string_with_custom_formatting
 (** [display_with_ansi_colors] displays the same string as [display_as_plain_string], but
     deletions and additions are marked by red and green text rather than '-' and '+'.
 *)
-val display_with_ansi_colors : ?display_options:Display_options.t -> Diff.t -> string
+val display_with_ansi_colors : Display_options.t -> Diff.t -> string
 
 val two_column_display_as_list
   :  ?display_options:Display_util_internal.Display_options.t
