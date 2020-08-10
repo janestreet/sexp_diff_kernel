@@ -82,9 +82,7 @@ let apply diff sexp =
     | _ ->
       raise_s
         [%message
-          "internal error in [Sexp_diff] while applying diff"
-            (diff : t)
-            (sexp : Sexp.t)])
+          "internal error in [Sexp_diff] while applying diff" (diff : t) (sexp : Sexp.t)])
 ;;
 
 let apply_exn diff sexp = apply diff sexp |> Or_error.ok_exn

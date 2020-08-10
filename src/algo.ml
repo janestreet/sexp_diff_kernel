@@ -172,9 +172,7 @@ module AChange = struct
     | Same _ -> 1
     | Enclose { cost; children = _ } -> cost
     | Replace (a, b) ->
-      Interned_sexp.size ~table a
-      + Interned_sexp.size ~table b
-      + cost_per_discrete_change
+      Interned_sexp.size ~table a + Interned_sexp.size ~table b + cost_per_discrete_change
     | Delete x | Add x -> Interned_sexp.size ~table x + cost_per_discrete_change
   ;;
 

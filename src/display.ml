@@ -25,8 +25,7 @@ end
 let hide_message ~num_hidden = sprintf "...%d unchanged lines..." num_hidden
 let all_hidden_message = "(no changes)"
 
-let two_column_display_as_list ?display_options diff ~on_full_width_message ~on_line_pair
-  =
+let two_column_display_as_list ?display_options diff ~on_full_width_message ~on_line_pair =
   let lines = U.hideable_line_pairs ?display_options diff in
   let length ~project =
     List.map lines ~f:(function

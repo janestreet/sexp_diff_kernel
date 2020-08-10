@@ -59,9 +59,10 @@ val two_column_display_as_list
 
       [left_padding] is whitespace to append after [left] to make up the full width of
       the left column. Similarly, [right_padding] after [right]. *)
-  -> on_line_pair:(left:Display_util_internal.Line.t
-                   -> right:Display_util_internal.Line.t
-                   -> left_padding:string
-                   -> right_padding:string
-                   -> 'a)
+  -> on_line_pair:
+       (left:Display_util_internal.Line.t
+        -> right:Display_util_internal.Line.t
+        -> left_padding:string
+        -> right_padding:string
+        -> 'a)
   -> 'a list
